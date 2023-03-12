@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Translator from "@/components/Translator";
+import Translator from "@/content/components/Translator"
 
 export default {
   name: "App",
@@ -15,6 +15,4 @@ export default {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

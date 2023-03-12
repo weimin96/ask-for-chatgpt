@@ -1,14 +1,15 @@
 <template>
   <img
-      :src="logo"
-      class="translator_button"
-      @mouseup.stop="e => e"
-      @click.stop="handleClick"
-   alt="">
+    :src="logo"
+    class="translator_button"
+    @mouseup.stop="(e) => e"
+    @click.stop="handleClick"
+    alt=""
+  />
 </template>
 
 <script>
-import logo from '@/assets/icon-32.png'
+import logo from "@/assets/icon-32.png"
 
 export default {
   name: "Translator-button",
@@ -17,7 +18,7 @@ export default {
   }),
   methods: {
     handleClick() {
-      this.$emit('click')
+      this.$emit("click")
     }
   }
 }

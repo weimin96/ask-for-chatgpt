@@ -1,45 +1,61 @@
 <template>
-  <div class="g-translator-btn-container" v-if="isTranslateVisible"
-       :style="{ top: buttonTop + 'px', left: buttonLeft + 'px' }">
-    <div class="g-translator-btn-layout">
-      <div class="g-translator-btn-tooltip" :tip="$t('message.iconTip')">
-        <div class="g-translator-btn"></div>
+  <div>
+    <div
+      class="g-translator-container"
+      v-if="isTranslateVisible"
+      :style="{
+        top: buttonTop + 'px',
+        left: buttonLeft + 'px',
+        'z-index': buttonZIndex
+      }"
+    >
+      <div
+        class="g-translator-btn-layout"
+        @mouseup.stop="(e) => e"
+        @click.stop="showModal"
+      >
+        <div class="g-translator-btn-tooltip" :tip="description">
+          <div class="g-translator-btn"></div>
+        </div>
       </div>
     </div>
+    <button @click="isShowResultPanel = true">打开弹窗</button>
+    <result-panel v-model:visible="isShowResultPanel" @closeModal="hideModal">
+      <h1>这是弹窗的标题</h1>
+      <p>{{ selectionText }}</p>
+    </result-panel>
   </div>
 </template>
 
 <script>
+import { getMaxZIndex } from "@/utils/utils"
+import ResultPanel from "@/content/components/ResultPanel"
+import { defineComponent } from "vue"
 
-export default {
+export default defineComponent({
   name: "MyTranslator",
   components: {
-
+    ResultPanel
   },
   data() {
     return {
       isTranslateVisible: false,
-      selectionText: '',
+      selectionText: "",
       buttonTop: 0,
-      buttonLeft: 0
+      buttonLeft: 0,
+      buttonZIndex: 2147483651,
+      description: "提示",
+      // description: chrome.i18n.getMessage("description")
+      isShowResultPanel: false
     }
   },
   mounted() {
-    document.addEventListener('mouseup', this.mouseUpHandler.bind(this))
-    // const { onMouseUp, changeDirectSetting, onEscDown, toggleInput } = this
-    // document.addEventListener('mouseup', onMouseUp)
-    // document.addEventListener('keydown', changeDirectSetting)
-    // document.addEventListener('keydown', toggleInput)
-    // document.addEventListener('keydown', onEscDown)
-    // document.addEventListener('contextMenuClick', e => {
-    //   onMouseUp({ clientX: 0, clientY: 0, pageY: 0 }, e.detail.text)
-    // })
+    document.addEventListener("mouseup", this.mouseUpHandler.bind(this))
   },
   methods: {
-    // 划词监听
     mouseUpHandler(event) {
-      let selection = window.getSelection();
-      console.log('selection', selection.toString().trim())
+      let selection = window.getSelection()
+      console.log("selection", selection.toString().trim())
       // 检测是否有选中内容
       if (!selection.isCollapsed) {
         this.selectionText = selection.toString().trim()
@@ -47,35 +63,30 @@ export default {
         // 计算按钮位置
         const range = selection.getRangeAt(0)
         const rect = range.getBoundingClientRect()
-        this.buttonTop = rect.bottom
-        this.buttonLeft = event.clientX;
+        this.buttonTop = rect.bottom + window.scrollY + 5
+        this.buttonLeft = event.clientX - 20
+        this.buttonZIndex = getMaxZIndex()
       } else {
         this.isTranslateVisible = false
       }
     },
-    // hidePanelInRoot() {
-    //   this.resultAsDialog = false
-    //   this.hidePanel()
-    // },
-    // showPanelAsDialog(text) {
-    //   this.selection = text
-    //   this.resultAsDialog = true
-    //   this.position = _calcPositionAsDialog()
-    //   this.showPanel(text)
-    // },
-    // onEscDown(e) {
-    //   if (e.keyCode === 27) {
-    //     this.hidePanel()
-    //     this.hideInput()
-    //   }
-    // },
+    hideModal() {
+      this.isShowResultPanel = false
+      this.isTranslateVisible = false
+    },
+    showModal() {
+      this.isShowResultPanel = true
+      this.isTranslateVisible = false
+      document.removeEventListener("mouseup", this.mouseUpHandler.bind(this))
+    }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>
-.g-translator-btn-container {
+.g-translator-container {
   position: absolute;
+  z-index: 2147483651;
   .g-translator-btn-layout {
     position: relative;
     padding: 3px;
@@ -121,7 +132,6 @@ export default {
         padding: 3px;
       }
     }
-
   }
 }
 </style>

@@ -1,0 +1,9 @@
+{
+  "name": {
+    "message": "Ask For ChatGPT",
+    "description": "Ask For ChatGPT"
+  },
+  "description": {
+    "message": "Use ChatGPT to explain the selected text!"
+  }
+}
