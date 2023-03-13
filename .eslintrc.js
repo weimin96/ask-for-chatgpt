@@ -11,12 +11,17 @@ module.exports = {
     "prettier/prettier": [
       "error",
       {
+        // 尾逗号
         trailingComma: "none",
-        semi: false
+        // 分号结尾
+        semi: true,
+        // 行尾序列
+        endOfLine: "auto"
       }
     ],
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
-    "no-undef": "off"
+    "no-undef": "off",
+    "no-unused-vars": "off"
   }
-}
+};

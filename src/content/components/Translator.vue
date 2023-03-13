@@ -20,17 +20,26 @@
       </div>
     </div>
     <button @click="isShowResultPanel = true">打开弹窗</button>
-    <result-panel v-model:visible="isShowResultPanel" @closeModal="hideModal">
-      <h1>这是弹窗的标题</h1>
+
+    <result-panel
+      v-model:visible="isShowResultPanel"
+      @closeModal="hideModal"
+      :style="{
+        top: buttonTop + 'px',
+        left: buttonLeft + 'px',
+        'z-index': buttonZIndex
+      }"
+    >
       <p>{{ selectionText }}</p>
     </result-panel>
   </div>
 </template>
 
 <script>
-import { getMaxZIndex } from "@/utils/utils"
-import ResultPanel from "@/content/components/ResultPanel"
-import { defineComponent } from "vue"
+import { getMaxZIndex } from "@/utils/utils";
+import ResultPanel from "@/content/components/ResultPanel";
+import { defineComponent } from "vue";
+import Browser from "webextension-polyfill";
 
 export default defineComponent({
   name: "MyTranslator",
@@ -47,46 +56,63 @@ export default defineComponent({
       description: "提示",
       // description: chrome.i18n.getMessage("description")
       isShowResultPanel: false
-    }
+    };
   },
   mounted() {
-    document.addEventListener("mouseup", this.mouseUpHandler.bind(this))
+    console.log("mounted");
+    document.addEventListener("mouseup", this.mouseUpHandler);
+    Browser.storage.local
+      .set({
+        [window.location.hostname]: document.title
+      })
+      .then(() => {
+        Browser.runtime.sendMessage(
+          `Saved document title for ${window.location.hostname}`
+        );
+      });
   },
   methods: {
     mouseUpHandler(event) {
-      let selection = window.getSelection()
-      console.log("selection", selection.toString().trim())
+      let selection = window.getSelection();
+      console.log("selection", selection.toString().trim());
       // 检测是否有选中内容
       if (!selection.isCollapsed) {
-        this.selectionText = selection.toString().trim()
-        this.isTranslateVisible = true
+        this.selectionText = selection.toString().trim();
+        this.isTranslateVisible = true;
         // 计算按钮位置
-        const range = selection.getRangeAt(0)
-        const rect = range.getBoundingClientRect()
-        this.buttonTop = rect.bottom + window.scrollY + 5
-        this.buttonLeft = event.clientX - 20
-        this.buttonZIndex = getMaxZIndex()
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        this.buttonTop = rect.bottom + window.scrollY + 5;
+        this.buttonLeft = event.clientX - 20;
+        this.buttonZIndex = getMaxZIndex();
       } else {
-        this.isTranslateVisible = false
+        this.isTranslateVisible = false;
       }
     },
     hideModal() {
-      this.isShowResultPanel = false
-      this.isTranslateVisible = false
+      this.isShowResultPanel = false;
+      this.isTranslateVisible = false;
+      document.addEventListener("mouseup", this.mouseUpHandler);
+      document.removeEventListener("click", this.hideModal);
     },
     showModal() {
-      this.isShowResultPanel = true
-      this.isTranslateVisible = false
-      document.removeEventListener("mouseup", this.mouseUpHandler.bind(this))
+      this.isShowResultPanel = true;
+      this.isTranslateVisible = false;
+      document.removeEventListener("mouseup", this.mouseUpHandler);
+      document.addEventListener("click", this.hideModal);
+
+      const assessToken = getAccessToken();
+      console.log("assessToken", assessToken);
     }
   }
-})
+});
 </script>
 
 <style lang="scss" scoped>
 .g-translator-container {
   position: absolute;
   z-index: 2147483651;
+
   .g-translator-btn-layout {
     position: relative;
     padding: 3px;
@@ -97,9 +123,11 @@ export default defineComponent({
     display: flex;
     user-select: none;
     cursor: pointer;
+
     .g-translator-btn-tooltip {
       position: relative;
       display: inline-block;
+
       &::before {
         content: attr(tip);
         position: absolute;
@@ -121,6 +149,7 @@ export default defineComponent({
         visibility: visible;
         opacity: 1;
       }
+
       .g-translator-btn {
         width: 16px;
         height: 16px;

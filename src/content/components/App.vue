@@ -5,14 +5,14 @@
 </template>
 
 <script>
-import Translator from "@/content/components/Translator"
+import Translator from "@/content/components/Translator";
 
 export default {
   name: "App",
   components: {
     Translator
   }
-}
+};
 </script>
 
 <style scoped></style>

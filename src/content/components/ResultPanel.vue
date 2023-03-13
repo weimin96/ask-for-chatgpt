@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue"
+import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
@@ -24,20 +24,17 @@ export default defineComponent({
   },
   methods: {
     closeModal() {
-      this.$emit("closeModal")
-      console.log(this.visible)
+      this.$emit("closeModal");
     }
   }
-})
+});
 </script>
 
 <style>
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
