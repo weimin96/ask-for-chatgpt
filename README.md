@@ -1,4 +1,4 @@
-# hello-world-plugin
+# test-chrome
 
 ## Project setup
 ```

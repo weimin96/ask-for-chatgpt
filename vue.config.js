@@ -1,45 +1,35 @@
-const CopyWebpackPlugin = require("copy-webpack-plugin")
-const path = require("path")
+const path = require("path");
+const fs = require("fs");
 
-// 页面文件
-const pages = {}
-// 配置 popup.html 页面
-const chromeName = ["popup"]
+// Generate pages object
+const pages = {};
 
+const chromeName = ["popup", "options", "devtools"];
+
+function getFileExtension(filename) {
+  return /[.]/.exec(filename) ? /[^.]+$/.exec(filename)[0] : undefined;
+}
 chromeName.forEach((name) => {
-  pages[name] = {
-    entry: `src/${name}/main.js`,
-    template: `src/${name}/index.html`,
-    filename: `${name}.html`
-  }
-})
+  const fileExtension = getFileExtension(name);
+  const fileName = name.replace("." + fileExtension, "");
+  pages[fileName] = {
+    entry: `src/entry/${name}/${name}.js`,
+    template: "public/index.html",
+    filename: `${fileName}.html`
+  };
+});
+
+const isDevMode = process.env.NODE_ENV === "development";
 
 module.exports = {
   pages,
-  productionSourceMap: false,
-
-  // 配置 content.js background.js
-  configureWebpack: {
-    resolve: {
-      extensions: [".js", ".vue", ".json"],
-      alias: {
-        "@": path.resolve("src")
-      }
-    },
-    entry: {
-      background: "./src/background/main.js",
-      content: "./src/content/main.js"
-    },
-    output: {
-      filename: "js/[name].js"
-    },
-    // 复制插件
-    plugins: [
-      // 复制文件到指定目录
-      new CopyWebpackPlugin({
+  filenameHashing: false,
+  chainWebpack: (config) => {
+    config.plugin("copy").use(require("copy-webpack-plugin"), [
+      {
         patterns: [
           {
-            from: path.resolve("src/plugins/manifest.json"),
+            from: path.resolve(`src/manifest.json`),
             to: `${path.resolve("dist")}/manifest.json`
           },
           {
@@ -47,31 +37,31 @@ module.exports = {
             to: path.resolve("dist/assets")
           },
           {
-            from: path.resolve("src/plugins/inject.js"),
-            to: path.resolve("dist/js")
-          },
-          {
             from: path.resolve("src/_locales"),
             to: path.resolve("dist/_locales")
           }
         ]
-      })
-    ],
-    optimization: {
-      minimize: false
+      }
+    ]);
+  },
+  configureWebpack: {
+    entry: {
+      background: "./src/entry/background/background.js",
+      content: "./src/entry/content/content.js"
+    },
+    output: {
+      filename: `js/[name].js`,
+      chunkFilename: `js/[name].js`
+    },
+    devtool: isDevMode ? "inline-source-map" : false,
+    resolve: {
+      extensions: [".js", ".vue", ".json"],
+      alias: {
+        "@": path.resolve("src")
+      }
     }
   },
-
   css: {
-    extract: {
-      filename: "css/[name].css"
-    }
-  },
-
-  pluginOptions: {
-    "style-resources-loader": {
-      preProcessor: "scss",
-      patterns: []
-    }
+    extract: false // Make sure the css is the same
   }
-}
+};
