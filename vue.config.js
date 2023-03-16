@@ -1,4 +1,7 @@
 const path = require("path");
+const AutoImport = require("unplugin-auto-import/webpack");
+const Components = require("unplugin-vue-components/webpack");
+const { ElementPlusResolver } = require("unplugin-vue-components/resolvers");
 
 // Generate pages object
 const pages = {};
@@ -44,6 +47,14 @@ module.exports = {
     ]);
   },
   configureWebpack: {
+    plugins: [
+      AutoImport({
+        resolvers: [ElementPlusResolver()]
+      }),
+      Components({
+        resolvers: [ElementPlusResolver()]
+      })
+    ],
     entry: {
       background: "./src/entry/background/background.js",
       content: "./src/entry/content/content.js"

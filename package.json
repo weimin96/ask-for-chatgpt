@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
+    "element-plus": "^2.3.0",
     "eventsource-parser": "^0.1.0",
     "expiry-map": "^2.0.0",
     "vue": "^3.2.13"
@@ -28,6 +29,8 @@
     "sass": "^1.59.2",
     "sass-loader": "^13.2.0",
     "style-resources-loader": "^1.5.0",
+    "unplugin-auto-import": "^0.15.1",
+    "unplugin-vue-components": "^0.24.1",
     "vue-cli-plugin-chrome-extension-cli": "~1.1.4"
   },
   "browserslist": [

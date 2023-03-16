@@ -19,7 +19,7 @@
         </div>
       </div>
     </div>
-    <result-panel
+    <!--    <result-panel
       v-model:visible="isShowResultPanel"
       @closeModal="hideModal"
       :style="{
@@ -28,6 +28,22 @@
         'z-index': buttonZIndex
       }"
     >
+    </result-panel>-->
+
+    <el-drawer
+      v-model="isDrawerShow"
+      direction="rtl"
+      :before-close="hideModal"
+      :show-close="false"
+    >
+      <template #header>
+        <div class="modal-header">
+          <div class="modal-logo">
+            <img :src="logo" alt="logo" width="16" height="16" />
+            <div class="modal-title">{{ name }}</div>
+          </div>
+        </div>
+      </template>
       <div class="panel-container">
         <div class="text-area-container">
           <textarea
@@ -58,7 +74,7 @@
           <p v-if="error2">Failed to load response from ChatGPT</p>
         </div>
       </div>
-    </result-panel>
+    </el-drawer>
   </div>
 </template>
 
@@ -70,7 +86,6 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "MyTranslator",
   components: {
-    ResultPanel
   },
   data() {
     return {
@@ -87,7 +102,11 @@ export default defineComponent({
       questionText: "请解释：",
       isLoading: false,
       error1: false,
-      error2: false
+      error2: false,
+
+      isDrawerShow: false,
+      logo: require("@/assets/icon-48.png"),
+      name: chrome.i18n.getMessage("name")
     };
   },
   mounted() {
@@ -120,9 +139,12 @@ export default defineComponent({
       this.answer = "";
       this.questionText = "请解释：";
       this.isLoading = false;
+      //
+      this.isDrawerShow = false;
     },
     showModal() {
-      this.isShowResultPanel = true;
+      this.isDrawerShow = true;
+      // this.isShowResultPanel = true;
       this.isTranslateVisible = false;
       document.removeEventListener("mouseup", this.mouseUpHandler);
       document.addEventListener("click", this.hideModal);
@@ -311,6 +333,36 @@ export default defineComponent({
     overflow-y: auto;
     line-height: 1.3;
     font-size: 14px;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  .modal-logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-right: auto;
+    img {
+      margin-right: 5px;
+    }
+    .modal-title {
+      margin: 0;
+    }
+  }
+  .modal-close {
+    background-color: transparent;
+    border: none;
+    color: #ccc;
+    font-size: 1.5em;
+    cursor: pointer;
+    &:hover {
+      color: #000;
+    }
   }
 }
 </style>

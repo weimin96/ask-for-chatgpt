@@ -1,7 +1,6 @@
-console.log("hello world content todo something~");
-
 import { createApp } from "vue";
 import App from "@/view/content";
+import "element-plus/dist/index.css";
 
 const app = contentApp(App);
 app.config.devtools = true;
