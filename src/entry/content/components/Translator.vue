@@ -19,8 +19,6 @@
         </div>
       </div>
     </div>
-    <button @click="isShowResultPanel = true">打开弹窗</button>
-
     <result-panel
       v-model:visible="isShowResultPanel"
       @closeModal="hideModal"
@@ -30,12 +28,35 @@
         'z-index': buttonZIndex
       }"
     >
-      <div>
-        <p>{{ selectionText }}</p>
-      </div>
-      <div>结果</div>
-      <div>
-        <p>{{ answer }}</p>
+      <div class="panel-container">
+        <div class="text-area-container">
+          <textarea
+            placeholder="请输入句子..."
+            v-model="selectionText"
+          ></textarea>
+        </div>
+        <div class="input-container">
+          <input
+            type="text"
+            placeholder="请输入提问..."
+            v-model="questionText"
+          />
+          <button @click="sendMessage" :disabled="isLoading">
+            <img v-if="!isLoading" :src="sendIcon" alt="发送" />
+            <div v-if="isLoading" class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </div>
+        <div class="result-layout">
+          <p>{{ answer }}</p>
+          <p v-if="error1">
+            请先登录 <a href="https://chat.openai.com">chat.openai.com！</a>
+          </p>
+          <p v-if="error2">Failed to load response from ChatGPT</p>
+        </div>
       </div>
     </result-panel>
   </div>
@@ -58,24 +79,20 @@ export default defineComponent({
       buttonTop: 0,
       buttonLeft: 0,
       buttonZIndex: 2147483651,
-      description: "提示",
-      // description: chrome.i18n.getMessage("description")
+      // description: "提示",
+      description: chrome.i18n.getMessage("description"),
       isShowResultPanel: false,
-      answer: ""
+      answer: "",
+      sendIcon: require("@/assets/send.png"),
+      questionText: "请解释：",
+      isLoading: false,
+      error1: false,
+      error2: false
     };
   },
   mounted() {
     console.log("mounted");
     document.addEventListener("mouseup", this.mouseUpHandler);
-    // Browser.storage.local
-    //   .set({
-    //     [window.location.hostname]: document.title
-    //   })
-    //   .then(() => {
-    //     Browser.runtime.sendMessage(
-    //       `Saved document title for ${window.location.hostname}`
-    //     );
-    //   });
   },
   methods: {
     mouseUpHandler(event) {
@@ -101,25 +118,39 @@ export default defineComponent({
       document.addEventListener("mouseup", this.mouseUpHandler);
       document.removeEventListener("click", this.hideModal);
       this.answer = "";
+      this.questionText = "请解释：";
+      this.isLoading = false;
     },
     showModal() {
-      const that = this;
       this.isShowResultPanel = true;
       this.isTranslateVisible = false;
       document.removeEventListener("mouseup", this.mouseUpHandler);
       document.addEventListener("click", this.hideModal);
-
+    },
+    sendMessage() {
+      this.answer = "";
+      this.error1 = false;
+      this.error2 = false;
+      const that = this;
       const port = chrome.runtime.connect();
       port.onMessage.addListener(function (msg) {
         if (msg.answer) {
-          that.answer = msg.answer;
+          if (msg.answer === "[FINISH]") {
+            that.isLoading = false;
+          } else {
+            that.answer = msg.answer;
+            that.isLoading = false;
+          }
         } else if (msg.error === "UNAUTHORIZED") {
-          that.answer = "Please login at chat.openai.com first";
+          that.error1 = true;
+          that.isLoading = false;
         } else {
-          that.answer = "Failed to load response from ChatGPT";
+          that.error2 = true;
+          that.isLoading = false;
         }
       });
-      port.postMessage({ question: "请解释：" + this.selectionText });
+      this.isLoading = true;
+      port.postMessage({ question: this.questionText + this.selectionText });
     }
   }
 });
@@ -178,6 +209,108 @@ export default defineComponent({
         padding: 3px;
       }
     }
+  }
+}
+
+.panel-container {
+  .text-area-container {
+    display: flex;
+    margin-bottom: 10px;
+    textarea {
+      flex: 1;
+      background-color: #f2f2f2;
+      border: none;
+      padding: 4px 8px;
+      font-size: 13px;
+      font-family: Arial, sans-serif;
+      resize: both;
+      line-height: 1.6em;
+      height: 90px;
+      &:focus {
+        background-color: #ffffff;
+        border: 2px solid #525252;
+        outline: none;
+      }
+    }
+  }
+
+  .input-container {
+    display: flex;
+    align-items: center;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 4px;
+    height: 26px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 13px;
+    }
+    button {
+      background-color: transparent;
+      transition: background-color 0.3s ease-in-out;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      line-height: 26px;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      &:hover {
+        background-color: rgba(17, 20, 24, 0.15);
+      }
+      img {
+        height: 13px;
+      }
+    }
+
+    .loading-dots {
+      display: flex;
+      align-items: center;
+      width: 16px;
+      height: 16px;
+      span {
+        background-color: #222222;
+        margin-left: 2px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        opacity: 0.4;
+        animation: loading-dots-animation 1s infinite ease-in-out;
+        &:nth-child(1) {
+          animation-delay: 0ms;
+        }
+        &:nth-child(2) {
+          animation-delay: 150ms;
+        }
+        &:nth-child(3) {
+          animation-delay: 300ms;
+        }
+      }
+      @keyframes loading-dots-animation {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+    }
+  }
+
+  .result-layout {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.3;
+    font-size: 14px;
   }
 }
 </style>

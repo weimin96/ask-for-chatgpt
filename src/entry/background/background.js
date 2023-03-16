@@ -68,6 +68,7 @@ async function getChatGPTAnswer(question, callback) {
     onMessage(message) {
       console.debug("sse message", message);
       if (message === "[DONE]") {
+        callback("[FINISH]");
         return;
       }
       try {

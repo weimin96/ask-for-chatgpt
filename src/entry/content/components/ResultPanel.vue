@@ -2,8 +2,10 @@
   <div v-if="visible" class="modal-overlay" @click="closeModal">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
-        <h2 class="modal-title">ChatGPT</h2>
-        <button class="modal-close" @click.stop="closeModal">&times;</button>
+        <div class="modal-logo">
+          <img :src="logo" alt="logo" width="16" height="16" />
+          <div class="modal-title">{{ name }}</div>
+        </div>
       </div>
       <div class="modal-content">
         <slot></slot>
@@ -21,6 +23,12 @@ export default defineComponent({
       type: Boolean,
       default: false
     }
+  },
+  data() {
+    return {
+      logo: require("@/assets/icon-48.png"),
+      name: chrome.i18n.getMessage("name")
+    };
   },
   methods: {
     closeModal() {
@@ -40,21 +48,31 @@ export default defineComponent({
   align-items: center;
   background-color: transparent;
   .modal-container {
+    width: 550px;
     background-color: #fff;
     border-radius: 5px;
-    box-shadow: none;
     max-width: 90%;
     max-height: 90%;
     overflow: auto;
     position: relative;
+    box-shadow: 0px 2px 16px rgba(0, 0, 0, 0.16);
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px;
       border-bottom: 1px solid #ccc;
-      .modal-title {
-        margin: 0;
+      .modal-logo {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        margin-right: auto;
+        img {
+          margin-right: 5px;
+        }
+        .modal-title {
+          margin: 0;
+        }
       }
       .modal-close {
         background-color: transparent;
@@ -66,6 +84,9 @@ export default defineComponent({
           color: #000;
         }
       }
+    }
+    .modal-content {
+      padding: 10px;
     }
   }
 }
