@@ -35,6 +35,8 @@
       direction="rtl"
       :before-close="hideModal"
       :show-close="false"
+      :modal="false"
+      :lock-scroll="false"
     >
       <template #header>
         <div class="modal-header">
@@ -85,8 +87,7 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "MyTranslator",
-  components: {
-  },
+  components: {},
   data() {
     return {
       isTranslateVisible: false,
@@ -352,6 +353,7 @@ export default defineComponent({
     }
     .modal-title {
       margin: 0;
+      font-size: 14px;
     }
   }
   .modal-close {

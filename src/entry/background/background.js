@@ -1,27 +1,48 @@
 import ExpiryMap from "expiry-map";
 import { guid, isEmpty } from "@/utils/utils";
 import { createParser } from "eventsource-parser";
+import { OpenAIChat } from "@/api/OpenAIChat";
 
 const cache = new ExpiryMap(10 * 1000);
 const ACCESS_TOKEN_KEY = "access_token";
 
-console.log("hello world background todo something3~");
-
-chrome.runtime.onConnect.addListener((port) => {
-  console.log("收到来自content-script的连接：" + port.name);
-  port.onMessage.addListener(async (msg) => {
-    console.info("接收消息", msg);
-    try {
-      await getChatGPTAnswer(msg.question, (answer) => {
-        port.postMessage({ answer });
+async function main() {
+  try {
+    chrome.runtime.onConnect.addListener((port) => {
+      console.log("收到来自content-script的连接");
+      port.onMessage.addListener(async (msg) => {
+        console.info("接收消息", msg);
+        try {
+          const setting = await getSetting();
+          if (setting) {
+            if (setting.aiProvider === "openAI") {
+              const apiKey = setting.apiKey;
+              await new OpenAIChat(apiKey)
+                .getChatCompletion(msg.question, "gpt-3.5-turbo", 0.7)
+                .then((answer) => {
+                  console.log("answer", answer);
+                  port.postMessage({ answer });
+                })
+                .catch((error) => console.error(error));
+            }
+          } else {
+            await getChatGPTAnswer(msg.question, (answer) => {
+              port.postMessage({ answer });
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          port.postMessage({ error: err.message });
+          cache.delete(ACCESS_TOKEN_KEY);
+        }
       });
-    } catch (err) {
-      console.error(err);
-      port.postMessage({ error: err.message });
-      cache.delete(ACCESS_TOKEN_KEY);
-    }
-  });
-});
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+main();
 
 const CHATGPT_SESSION_API = "https://chat.openai.com/api/auth/session";
 const CHATGPT_BACKEND_API = "https://chat.openai.com/backend-api/conversation";
@@ -119,4 +140,16 @@ async function* streamAsyncIterable(stream) {
   } finally {
     reader.releaseLock();
   }
+}
+
+function getSetting() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get("setting", (result) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result.setting);
+      }
+    });
+  });
 }

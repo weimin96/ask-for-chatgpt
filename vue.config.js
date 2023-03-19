@@ -72,6 +72,8 @@ module.exports = {
     }
   },
   css: {
-    extract: false // Make sure the css is the same
+    extract: {
+      filename: `css/[name].css`
+    }
   }
 };

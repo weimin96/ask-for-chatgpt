@@ -6,6 +6,7 @@
 
 <script>
 import Translator from "@/entry/content/components/Translator";
+import "element-plus/dist/index.css";
 
 export default {
   name: "ContentApp",

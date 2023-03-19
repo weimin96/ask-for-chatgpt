@@ -15,13 +15,17 @@
     "service_worker": "js/background.js"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "css": ["css/popup.css"]
   },
   "content_scripts": [
     {
       "matches": [
         "http://*/*",
         "https://*/*"
+      ],
+      "css": [
+        "css/content.css"
       ],
       "js": [
         "js/content.js"
